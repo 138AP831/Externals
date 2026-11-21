@@ -59,6 +59,9 @@ let commandTimer: ReturnType<typeof setTimeout> | null = null;
 let restartTimer: ReturnType<typeof setTimeout> | null = null;
 let quickFailures = 0;
 let lastStart = 0;
+// False when started automatically on app open (no tap yet).
+let startedFromTap = false;
+let tapListenerArmed = false;
 
 const store = () => useHandsFree.getState();
 
@@ -139,7 +142,13 @@ function startRecognition() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   rec.onerror = (event: any) => {
     if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
-      disableHandsFree();
+      if (!startedFromTap) {
+        // The browser wants one tap before it opens the mic: start then.
+        disableHandsFree({ remember: false });
+        armStartOnFirstTap();
+        return;
+      }
+      disableHandsFree({ remember: false });
       store().set({
         error: 'Microphone blocked. Allow microphone access for this app, then turn hands-free on again.',
       });
@@ -240,6 +249,7 @@ export function stopSpeaking(): void {
 }
 
 export function enableHandsFree(): void {
+  startedFromTap = true;
   if (!isHandsFreeSupported()) {
     store().set({ status: 'unsupported', error: 'Voice mode needs Chrome on Android or desktop.' });
     return;
@@ -260,32 +270,52 @@ export function enableHandsFree(): void {
   startRecognition();
 }
 
-export function disableHandsFree(): void {
+/** Turn off. `remember` (default) keeps it off on the next app start. */
+export function disableHandsFree(opts: { remember?: boolean } = {}): void {
+  const remember = opts.remember ?? true;
   enabled = false;
   clearCommandTimer();
   stopRecognition();
   try {
     window.speechSynthesis?.cancel();
-    localStorage.removeItem(STORAGE_KEY);
+    if (remember) localStorage.setItem(STORAGE_KEY, '0');
   } catch {
     /* ignore */
   }
   store().set({ status: 'off' });
 }
 
+function armStartOnFirstTap() {
+  if (tapListenerArmed || typeof document === 'undefined') return;
+  tapListenerArmed = true;
+  store().set({ error: 'Tap anywhere once so Jarvis can start listening.' });
+  document.addEventListener(
+    'pointerdown',
+    () => {
+      tapListenerArmed = false;
+      if (!enabled) enableHandsFree();
+    },
+    { capture: true, once: true },
+  );
+}
+
 export function isHandsFreeEnabled(): boolean {
   return enabled;
 }
 
-/** Re-enable on app start if the user left hands-free on last time. */
+/**
+ * Start listening on app open — on by default, so "Hey Jarvis" works without
+ * tapping anything. Stays off only if the user switched it off.
+ */
 export function restoreHandsFree(): void {
-  let wanted = false;
+  let wanted = true;
   try {
-    wanted = localStorage.getItem(STORAGE_KEY) === '1';
+    wanted = localStorage.getItem(STORAGE_KEY) !== '0';
   } catch {
     /* ignore */
   }
   if (!wanted || !isHandsFreeSupported()) return;
+  startedFromTap = false;
   enabled = true;
   store().set({ status: 'waiting', error: null });
   startRecognition();

@@ -95,9 +95,9 @@ Then ask e.g. "Do I have unread emails?", "Find emails from Amazon this week",
 `gmail_list_unread`, `gmail_read_email` (Gmail search syntax works).
 
 ## Voice ("Hey Jarvis")
-In the app, tap **Hands-free** (above the message box) and allow the microphone.
+Hands-free is on by default: open the app (allow the microphone the first time).
 Say "Hey Jarvis" or "Hi Jarvis" + your question; Jarvis answers out loud.
-It stays on next time you open the app. Works while the app is open on screen.
+Tap **Hands-free** to switch it off (remembered). Works while the app is open on screen.
 
 To open Jarvis by voice from anywhere on a Samsung:
 - **Bixby**: Bixby app → ⋮ → Quick commands → **+** → command "Jarvis" →

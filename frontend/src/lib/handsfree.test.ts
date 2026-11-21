@@ -5,6 +5,7 @@ import {
   disableHandsFree,
   setCommandHandler,
   speakReply,
+  restoreHandsFree,
   useHandsFree,
 } from './handsfree';
 
@@ -142,5 +143,43 @@ describe('hands-free flow', () => {
     latest().onerror?.({ error: 'not-allowed' });
     expect(useHandsFree.getState().status).toBe('off');
     expect(useHandsFree.getState().error).toMatch(/Microphone blocked/);
+  });
+});
+
+describe('on by default', () => {
+  it('starts listening on app open with no tap', () => {
+    restoreHandsFree();
+    expect(useHandsFree.getState().status).toBe('waiting');
+    expect(latest().started).toBe(true);
+  });
+
+  it('stays off after the user switches it off', () => {
+    enableHandsFree();
+    disableHandsFree();
+    FakeRecognition.instances = [];
+    restoreHandsFree();
+    expect(useHandsFree.getState().status).toBe('off');
+    expect(FakeRecognition.instances).toHaveLength(0);
+    enableHandsFree();
+    disableHandsFree({ remember: false });
+    restoreHandsFree();
+    expect(useHandsFree.getState().status).toBe('waiting');
+  });
+
+  it('if the browser needs a tap first, starts on the first tap', () => {
+    const listeners: Record<string, () => void> = {};
+    vi.stubGlobal('document', {
+      visibilityState: 'visible',
+      addEventListener: (type: string, fn: () => void) => {
+        listeners[type] = fn;
+      },
+    });
+    restoreHandsFree();
+    latest().onerror?.({ error: 'not-allowed' });
+    expect(useHandsFree.getState().status).toBe('off');
+    expect(useHandsFree.getState().error).toMatch(/Tap anywhere once/);
+    listeners.pointerdown();
+    expect(useHandsFree.getState().status).toBe('waiting');
+    expect(latest().started).toBe(true);
   });
 });
