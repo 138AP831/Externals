@@ -485,6 +485,9 @@ def create_app(
     from openjarvis.server.spotify_routes import router as spotify_router
 
     app.include_router(spotify_router)
+    from openjarvis.server.vision_routes import router as vision_router
+
+    app.include_router(vision_router)
     include_all_routes(app)
 
     # Restore SendBlue channel bindings from database on startup

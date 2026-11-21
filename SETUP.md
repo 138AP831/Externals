@@ -117,3 +117,10 @@ To open Jarvis by voice from anywhere on a Samsung:
 Ask: "what am I listening to?", "my top artists this month", "play Blinding Lights",
 "pause", "next song", "volume 30". Playback control needs Spotify Premium and the
 Spotify app open on a device.
+
+## Camera ("what am I looking at?")
+Tap the **camera** icon next to the message box, or say "Hey Jarvis, open the camera".
+Point the phone and ask — typed, the 👁 button ("what is this?"), or
+"Hey Jarvis, is this enough water for the plant?". Jarvis captures ~1.5 s of
+frames (so it sees motion like pouring), answers aloud, and keeps the Q&A in
+the chat. Say "Hey Jarvis, close camera" to exit. Server: `POST /v1/vision`.

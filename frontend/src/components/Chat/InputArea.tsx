@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { Send, Square, Paperclip, Search, Ear } from 'lucide-react';
+import { Send, Square, Paperclip, Search, Ear, Camera } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAppStore, generateId } from '../../lib/store';
 import { streamChat, streamResearch } from '../../lib/sse';
@@ -11,6 +11,7 @@ import {
   resolveChatEngine,
 } from '../../lib/chat-telemetry';
 import { MicButton } from './MicButton';
+import { CameraView } from './CameraView';
 import {
   useHandsFree,
   enableHandsFree,
@@ -18,6 +19,7 @@ import {
   restoreHandsFree,
   setCommandHandler,
   speakReply,
+  replyAborted,
   stopSpeaking,
   isHandsFreeSupported,
 } from '../../lib/handsfree';
@@ -573,14 +575,22 @@ export function InputArea() {
   sendRef.current = sendMessage;
   const busyRef = useRef(false);
   busyRef.current = streamState.isStreaming || modelLoading || !selectedModel;
+  const [cameraOpen, setCameraOpen] = useState(false);
   useEffect(() => {
     setCommandHandler((command) => {
+      if (/^(open|start|show|turn on)( the| my)? camera\b/i.test(command)) {
+        setCameraOpen(true);
+        setTimeout(replyAborted, 0); // instant action: back to listening
+        return true;
+      }
       if (busyRef.current) return false;
       void sendRef.current(command);
       return true;
     });
     restoreHandsFree();
-    return () => setCommandHandler(null);
+    return () => {
+      setCommandHandler(null);
+    };
   }, []);
   useEffect(() => {
     if (handsFree.error) toast.error(handsFree.error, { duration: 6000 });
@@ -696,6 +706,16 @@ export function InputArea() {
           </button>
         ) : (
           <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => setCameraOpen(true)}
+              className="p-2 rounded-xl transition-colors shrink-0 cursor-pointer"
+              style={{ color: 'var(--color-text-tertiary)' }}
+              title="Camera: ask about what you see"
+              aria-label="Open camera"
+            >
+              <Camera size={18} />
+            </button>
             <MicButton
               state={speechState}
               onClick={handleMicClick}
@@ -723,6 +743,7 @@ export function InputArea() {
           <kbd className="font-mono">Shift+Enter</kbd> for new line
         </span>
       </div>
+      {cameraOpen && <CameraView onClose={() => setCameraOpen(false)} />}
     </div>
   );
 }

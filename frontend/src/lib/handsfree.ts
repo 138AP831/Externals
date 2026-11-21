@@ -76,9 +76,15 @@ export function isHandsFreeSupported(): boolean {
   return !!recognitionCtor() && typeof window !== 'undefined' && 'speechSynthesis' in window;
 }
 
-/** Register the function that sends a command as a chat message. */
-export function setCommandHandler(handler: CommandHandler | null): void {
+/**
+ * Register the function that handles a spoken command (the chat input, or
+ * the camera view while it is open). Returns the previous handler so a
+ * temporary owner can restore it.
+ */
+export function setCommandHandler(handler: CommandHandler | null): CommandHandler | null {
+  const previous = commandHandler;
   commandHandler = handler;
+  return previous;
 }
 
 function clearCommandTimer() {
@@ -233,6 +239,23 @@ export function speakReply(text: string): void {
     return;
   }
   say(speakable);
+}
+
+/**
+ * Speak an answer aloud. In hands-free mode this also pauses listening and
+ * resumes afterwards; otherwise it just talks.
+ */
+export function speakAnswer(text: string): void {
+  if (enabled) {
+    speakReply(text);
+    return;
+  }
+  const speakable = toSpeakableText(text).trim();
+  if (!speakable || typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(speakable);
+  utter.lang = navigator.language || 'en-US';
+  window.speechSynthesis.speak(utter);
 }
 
 /** The reply failed or was cancelled: resume listening. */

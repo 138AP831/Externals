@@ -134,7 +134,9 @@ class TestSpeechHeaders:
         assert "microphone=(self)" in policy
         assert "microphone=()" not in policy
 
-    def test_camera_and_geolocation_stay_blocked(self):
+    def test_camera_allowed_for_same_origin_geolocation_blocked(self):
+        """The camera view needs the camera on this origin only."""
         policy = SECURITY_HEADERS["Permissions-Policy"]
-        assert "camera=()" in policy
+        assert "camera=(self)" in policy
+        assert "camera=()" not in policy
         assert "geolocation=()" in policy
