@@ -1,5 +1,7 @@
 // Must stay the first import: fills in crypto.randomUUID before any module uses it.
 import './lib/polyfills';
+// Must run before the store loads settings.
+import './lib/key-from-link';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router';

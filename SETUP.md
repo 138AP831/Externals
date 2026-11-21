@@ -63,3 +63,23 @@ Jarvis runs on the phone itself in Termux; you use it through Chrome as an app.
 Samsung battery saver may kill Termux in the background: Settings → Apps → Termux →
 Battery → **Unrestricted**. Terminal chat also works: `jarvis chat`.
 To update later, re-run `bash install-termux.sh`.
+
+## Phone app (cloud) — recommended
+Jarvis runs on a free Render.com server; your phone gets a home-screen app.
+No Termux, nothing to start.
+
+1. Sign up at https://render.com (use "Sign in with GitHub").
+2. **New → Blueprint** → connect `138AP831/Externals` → branch
+   `ccr-0c7f40b2-ujfngp` → it reads `render.yaml`.
+3. When asked for the two secrets:
+   - `OPENJARVIS_API_KEY`: make up a long password (this protects your Jarvis).
+   - `GEMINI_API_KEY`: your Google AI Studio key.
+4. **Apply**. The first build takes ~10–15 min. Render shows your address,
+   e.g. `https://jarvis-ab12.onrender.com`.
+5. On the phone, open in Chrome: `https://jarvis-ab12.onrender.com/#key=YOUR_PASSWORD`
+   (signs this phone in once; the password is then removed from the address bar).
+6. Chrome ⋮ → **Add to Home screen** → **Install**. Done — tap the Jarvis icon.
+
+Free-plan notes: the server sleeps after 15 min unused, so the first message after
+a break takes ~1 min; chat history resets when it restarts. Render's $7/month plan
+removes both. To change keys: Render dashboard → jarvis → Environment.
