@@ -181,7 +181,7 @@ export function CameraView({ onClose }: { onClose: () => void }) {
     handsFree.status === 'waiting'
       ? 'Say “Hey Nova, …” or type a question'
       : handsFree.status === 'listening'
-        ? 'Listening…'
+        ? 'Listening… just ask (say “stop” to end)'
         : handsFree.status === 'speaking'
           ? 'Speaking…'
           : 'Ask about what you see';

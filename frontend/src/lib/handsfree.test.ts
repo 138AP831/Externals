@@ -6,6 +6,7 @@ import {
   setCommandHandler,
   speakReply,
   restoreHandsFree,
+  isEndOfConversation,
   useHandsFree,
 } from './handsfree';
 
@@ -116,7 +117,9 @@ describe('hands-free flow', () => {
 
     const before = FakeRecognition.instances.length;
     reply.onend?.();
-    expect(useHandsFree.getState().status).toBe('waiting');
+    // Conversation mode: listening again, no wake word needed.
+    expect(useHandsFree.getState().status).toBe('listening');
+    expect(useHandsFree.getState().conversation).toBe(true);
     expect(FakeRecognition.instances.length).toBe(before + 1);
     expect(latest().started).toBe(true);
   });
@@ -185,5 +188,68 @@ describe('on by default', () => {
     listeners.pointerdown();
     expect(useHandsFree.getState().status).toBe('waiting');
     expect(latest().started).toBe(true);
+  });
+});
+
+describe('conversation mode', () => {
+  function start() {
+    const sent: string[] = [];
+    setCommandHandler((c) => {
+      sent.push(c);
+      return true;
+    });
+    enableHandsFree();
+    latest().hear('Hey Nova, what is the capital of France');
+    speakReply('Paris.');
+    spoken[spoken.length - 1].onend?.();
+    return sent;
+  }
+
+  afterEach(() => vi.useRealTimers());
+
+  it('takes follow-ups without the wake word', () => {
+    const sent = start();
+    latest().hear('and of Germany');
+    expect(sent).toEqual(['what is the capital of France', 'and of Germany']);
+    speakReply('Berlin.');
+    spoken[spoken.length - 1].onend?.();
+    latest().hear('hey nova and Italy');
+    expect(sent[2]).toBe('and Italy');
+  });
+
+  it('ends on "stop" / "thanks Nova" and goes back to needing the wake word', () => {
+    const sent = start();
+    latest().hear('thanks Nova');
+    expect(useHandsFree.getState().status).toBe('waiting');
+    expect(useHandsFree.getState().conversation).toBe(false);
+    latest().hear('what time is it');
+    expect(sent).toHaveLength(1);
+  });
+
+  it('times out after silence, but speech in progress keeps it open', () => {
+    vi.useFakeTimers();
+    start();
+    vi.advanceTimersByTime(10000);
+    // user starts talking (interim result) just before the window closes
+    latest().onresult?.({
+      resultIndex: 0,
+      results: [Object.assign([{ transcript: 'and' }], { isFinal: false })],
+    });
+    vi.advanceTimersByTime(10000);
+    expect(useHandsFree.getState().status).toBe('listening');
+    vi.advanceTimersByTime(3000);
+    expect(useHandsFree.getState().status).toBe('waiting');
+  });
+
+  it.each([
+    ['stop', true],
+    ['Okay thanks', true],
+    ["that's all", true],
+    ['bye Nova', true],
+    ['thank you', true],
+    ['stop the music', false],
+    ['thanks, now play some jazz', false],
+  ])('isEndOfConversation(%s)', (text, end) => {
+    expect(isEndOfConversation(text)).toBe(end);
   });
 });

@@ -99,7 +99,9 @@ Then ask e.g. "Do I have unread emails?", "Find emails from Amazon this week",
 
 ## Voice ("Hey Nova")
 Hands-free is on by default: open the app (allow the microphone the first time).
-Say "Hey Nova" or "Hi Nova" + your question; Jarvis answers out loud.
+Say "Hey Nova" or "Hi Nova" + your question; Nova answers out loud.
+Conversation mode: after each answer Nova keeps listening ~12 s, so follow-ups
+need no wake word. Say "stop", "that's all" or "thanks Nova" to end.
 Tap **Hands-free** to switch it off (remembered). Works while the app is open on screen.
 
 To open Jarvis by voice from anywhere on a Samsung:

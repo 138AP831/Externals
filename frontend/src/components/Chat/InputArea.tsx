@@ -598,7 +598,7 @@ export function InputArea() {
   const handsFreeOn = handsFree.status !== 'off' && handsFree.status !== 'unsupported';
   const handsFreeLabel: Record<string, string> = {
     waiting: 'Say "Hey Nova"…',
-    listening: 'Listening…',
+    listening: handsFree.conversation ? 'Listening… go ahead (say "stop" to end)' : 'Listening…',
     thinking: handsFree.heard ? `“${handsFree.heard}”` : 'Thinking…',
     speaking: 'Speaking… tap to stop',
   };

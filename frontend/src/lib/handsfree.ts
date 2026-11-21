@@ -33,17 +33,32 @@ export function parseWake(transcript: string): { woke: boolean; command: string 
 
 const STORAGE_KEY = 'openjarvis-handsfree';
 const COMMAND_WINDOW_MS = 8000;
+// Conversation mode: after Nova answers, keep listening this long for a
+// follow-up without needing the wake word. Speech in progress extends it.
+const FOLLOW_UP_MS = 12000;
+const END_CONVERSATION_RE =
+  /^(?:(?:ok(?:ay)?|thanks?|thank you)[\s,]*)*(?:stop|that'?s (?:all|it)|bye|goodbye|never ?mind|thanks?(?: you)?|i'?m done|done|go to sleep|cancel)(?:[\s,]+(?:nova|jarvis))?[\s.!]*$/i;
+
+/** True if a follow-up utterance just ends the conversation. */
+export function isEndOfConversation(text: string): boolean {
+  return END_CONVERSATION_RE.test(text.trim());
+}
 
 interface HandsFreeStore {
   status: HandsFreeStatus;
   heard: string;
   error: string | null;
-  set: (patch: Partial<Pick<HandsFreeStore, 'status' | 'heard' | 'error'>>) => void;
+  /** In a conversation: follow-ups need no wake word. */
+  conversation: boolean;
+  set: (
+    patch: Partial<Pick<HandsFreeStore, 'status' | 'heard' | 'error' | 'conversation'>>,
+  ) => void;
 }
 
 export const useHandsFree = create<HandsFreeStore>((set) => ({
   status: 'off',
   heard: '',
+  conversation: false,
   error: null,
   set: (patch) => set(patch),
 }));
@@ -109,7 +124,18 @@ function submit(command: string) {
 function onTranscript(text: string) {
   const { status } = store();
   if (status === 'listening') {
-    if (text.trim()) submit(text.trim());
+    const t = text.trim();
+    if (!t) return;
+    if (isEndOfConversation(t)) {
+      clearCommandTimer();
+      store().set({ status: 'waiting', conversation: false });
+      say('Okay.', { resumeAfter: false });
+      return;
+    }
+    // "Hey Nova, ..." during a conversation: drop the wake word.
+    const { woke, command } = parseWake(t);
+    if (woke && !command) return; // just the wake word: keep listening
+    submit(woke ? command : t);
     return;
   }
   if (status !== 'waiting') return;
@@ -118,12 +144,9 @@ function onTranscript(text: string) {
   if (command) {
     submit(command);
   } else {
-    store().set({ status: 'listening', heard: '' });
+    store().set({ status: 'listening', heard: '', conversation: true });
     chime();
-    clearCommandTimer();
-    commandTimer = setTimeout(() => {
-      if (store().status === 'listening') store().set({ status: 'waiting' });
-    }, COMMAND_WINDOW_MS);
+    armListeningWindow(COMMAND_WINDOW_MS);
   }
 }
 
@@ -136,7 +159,8 @@ function startRecognition() {
 
   const rec: Recognition = new Ctor();
   rec.continuous = true;
-  rec.interimResults = false;
+  // Interim results only keep a follow-up window open while the user talks.
+  rec.interimResults = true;
   rec.lang = navigator.language || 'en-US';
   rec.maxAlternatives = 1;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -144,6 +168,9 @@ function startRecognition() {
     for (let i = event.resultIndex; i < event.results.length; i++) {
       const result = event.results[i];
       if (result.isFinal) onTranscript(result[0].transcript || '');
+      else if (store().status === 'listening' && commandTimer) {
+        armListeningWindow(FOLLOW_UP_MS); // still talking: keep listening
+      }
     }
   };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -199,18 +226,35 @@ function stopRecognition() {
 
 function backToWaiting() {
   if (!enabled) return;
-  store().set({ status: 'waiting' });
+  clearCommandTimer();
+  store().set({ status: 'waiting', conversation: false });
   startRecognition();
+}
+
+function armListeningWindow(ms: number) {
+  clearCommandTimer();
+  commandTimer = setTimeout(() => {
+    if (store().status === 'listening') store().set({ status: 'waiting', conversation: false });
+  }, ms);
+}
+
+/** After a reply: stay in the conversation, listening without the wake word. */
+function continueConversation() {
+  if (!enabled) return;
+  store().set({ status: 'listening', heard: '', conversation: true });
+  startRecognition();
+  armListeningWindow(FOLLOW_UP_MS);
 }
 
 function chime() {
   say('Yes?', { resumeAfter: false });
 }
 
-function say(text: string, opts: { resumeAfter?: boolean } = {}) {
+function say(text: string, opts: { resumeAfter?: boolean; followUp?: boolean } = {}) {
   const resumeAfter = opts.resumeAfter ?? true;
+  const next = opts.followUp ? continueConversation : backToWaiting;
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
-    if (resumeAfter) backToWaiting();
+    if (resumeAfter) next();
     return;
   }
   const synth = window.speechSynthesis;
@@ -220,12 +264,12 @@ function say(text: string, opts: { resumeAfter?: boolean } = {}) {
   if (resumeAfter) {
     store().set({ status: 'speaking' });
     stopRecognition();
-    utter.onend = () => backToWaiting();
+    utter.onend = () => next();
     utter.onerror = (e: SpeechSynthesisErrorEvent) => {
       if (e.error === 'not-allowed') {
         store().set({ error: 'Tap the screen once to allow Nova to speak.' });
       }
-      backToWaiting();
+      next();
     };
   }
   synth.speak(utter);
@@ -239,7 +283,7 @@ export function speakReply(text: string): void {
     backToWaiting();
     return;
   }
-  say(speakable);
+  say(speakable, { followUp: true });
 }
 
 /**
