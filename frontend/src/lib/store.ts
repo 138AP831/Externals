@@ -268,6 +268,10 @@ interface AppState {
   setModelLoading: (loading: boolean) => void;
 }
 
+function isNarrowScreen(): boolean {
+  return typeof window !== 'undefined' && window.innerWidth < 768;
+}
+
 export const useAppStore = create<AppState>((set, get) => {
   const initial = loadConversations();
   const convList = Object.values(initial.conversations).sort(
@@ -292,8 +296,9 @@ export const useAppStore = create<AppState>((set, get) => {
     settings: loadSettings(),
 
     commandPaletteOpen: false,
-    sidebarOpen: true,
-    systemPanelOpen: true,
+    // Phones: start with the chat full-width; panels open as overlays.
+    sidebarOpen: !isNarrowScreen(),
+    systemPanelOpen: !isNarrowScreen(),
 
     optInEnabled: localStorage.getItem(OPTIN_KEY) === 'true',
     optInDisplayName: localStorage.getItem(OPTIN_NAME_KEY) || '',

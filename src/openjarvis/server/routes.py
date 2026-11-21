@@ -1178,10 +1178,15 @@ async def list_models(request: Request) -> ModelListResponse:
     engine = request.app.state.engine
     all_ids = await asyncio.to_thread(engine.list_models)
     known_models = set(all_ids)
+    # The server's own configured model is always selectable, even when it is
+    # a cloud model (e.g. a cloud-only setup with default_model = gemini-*);
+    # otherwise the picker is empty and the UI cannot send anything.
+    configured = getattr(request.app.state, "model", "")
     model_ids = [
         m
         for m in all_ids
-        if not is_cloud_model(m)
+        if m == configured
+        or not is_cloud_model(m)
         or _engine_key_for_model(engine, m) in ("litellm", "nim")
         or _local_engine_advertises(engine, m, known_models=known_models)
     ]

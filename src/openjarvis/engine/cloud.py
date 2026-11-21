@@ -2022,6 +2022,29 @@ class CloudEngine(InferenceEngine):
             async for chunk in self._stream_full_openai(messages, **kw):
                 yield chunk
 
+    def _google_models(self) -> List[str]:
+        """Gemini models available to this key, falling back to the static list.
+
+        The static list goes stale as Google retires models for new keys, which
+        made ``jarvis serve`` reject a valid configured model. Fetched once.
+        """
+        cached = getattr(self, "_google_models_cache", None)
+        if cached is not None:
+            return cached
+        models: List[str] = []
+        try:
+            for m in self._google_client.models.list(config={"page_size": 200}):
+                name = (getattr(m, "name", "") or "").removeprefix("models/")
+                actions = getattr(m, "supported_actions", None) or []
+                if name.startswith("gemini-") and "generateContent" in actions:
+                    models.append(name)
+        except Exception as exc:  # network/auth failure: keep working offline
+            logger.debug("Could not list Gemini models: %s", exc)
+        result = list(dict.fromkeys(models + _GOOGLE_MODELS))
+        if models:
+            self._google_models_cache = result
+        return result
+
     def list_models(self) -> List[str]:
         models: List[str] = []
         if self._openai_client is not None:
@@ -2029,7 +2052,7 @@ class CloudEngine(InferenceEngine):
         if self._anthropic_client is not None:
             models.extend(_ANTHROPIC_MODELS)
         if self._google_client is not None:
-            models.extend(_GOOGLE_MODELS)
+            models.extend(self._google_models())
         if self._openrouter_client is not None:
             models.extend(_OPENROUTER_POPULAR)
         if self._atlascloud_client is not None:
