@@ -12,7 +12,7 @@ services:
     dockerContext: .
     # Render's default web port is 10000; Docker commands do not expand $PORT,
     # so PORT below and --port here must match.
-    dockerCommand: serve --host 0.0.0.0 --port 10000 --engine cloud --model gemini-3.5-flash-lite
+    dockerCommand: jarvis serve --host 0.0.0.0 --port 10000 --engine cloud --model gemini-3.5-flash-lite
     healthCheckPath: /health
     autoDeploy: true
     envVars:
@@ -27,5 +27,14 @@ services:
         sync: false
       # The free plan's disk is wiped on every restart/deploy, so chat history
       # stored here is not permanent.
+      # Tools, agent and model for the server (baked into the image).
+      - key: OPENJARVIS_CONFIG
+        value: /app/deploy/render/config.toml
+      # Optional: Gmail access with a Google App Password
+      # (myaccount.google.com/apppasswords). Leave empty to skip email.
+      - key: GMAIL_ADDRESS
+        sync: false
+      - key: GMAIL_APP_PASSWORD
+        sync: false
       - key: OPENJARVIS_HOME
         value: /home/openjarvis/.openjarvis

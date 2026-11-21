@@ -83,3 +83,23 @@ No Termux, nothing to start.
 Free-plan notes: the server sleeps after 15 min unused, so the first message after
 a break takes ~1 min; chat history resets when it restarts. Render's $7/month plan
 removes both. To change keys: Render dashboard → jarvis → Environment.
+
+## Gmail
+Jarvis reads Gmail live (read-only) with a Google App Password:
+1. Turn on 2-Step Verification: https://myaccount.google.com/security
+2. Create an App Password: https://myaccount.google.com/apppasswords (name it "Jarvis").
+3. Render dashboard → jarvis → **Environment** → add `GMAIL_ADDRESS` (your Gmail) and
+   `GMAIL_APP_PASSWORD` (the 16 letters) → **Save, rebuild and deploy**.
+Then ask e.g. "Do I have unread emails?", "Find emails from Amazon this week",
+"Read the latest email from my bank". Tools: `gmail_search_emails`,
+`gmail_list_unread`, `gmail_read_email` (Gmail search syntax works).
+
+## Voice ("Hey Jarvis")
+In the app, tap **Hands-free** (above the message box) and allow the microphone.
+Say "Hey Jarvis" or "Hi Jarvis" + your question; Jarvis answers out loud.
+It stays on next time you open the app. Works while the app is open on screen.
+
+To open Jarvis by voice from anywhere on a Samsung:
+- **Bixby**: Bixby app → ⋮ → Quick commands → **+** → command "Jarvis" →
+  action "Open Jarvis" (the installed app). Then: "Hi Bixby, Jarvis".
+- **Google Assistant**: "Hey Google, open Jarvis".

@@ -1,0 +1,19 @@
+# OpenJarvis server config for the Render deployment (OPENJARVIS_CONFIG).
+# Keys come from Render environment variables, never from this file.
+
+[engine]
+default = "cloud"
+
+[intelligence]
+default_model = "gemini-3.5-flash-lite"
+
+[agent]
+default_agent = "orchestrator"
+
+[tools]
+# Server-safe tools that work without extra accounts, plus live Gmail.
+enabled = "think,calculator,web_search,http_request,code_interpreter,pdf_extract,fx_macro_data,memory_store,memory_search,memory_retrieve,gmail_search_emails,gmail_list_unread,gmail_read_email"
+
+[analytics]
+enabled = false
+choice_recorded = true

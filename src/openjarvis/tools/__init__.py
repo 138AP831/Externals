@@ -43,6 +43,7 @@ _BUILTIN_TOOL_MODULES = (
     "knowledge_tools",
     "text_to_speech",
     "digest_collect",
+    "gmail_tools",
     "scan_chunks",
     "knowledge_sql",
     "apple_calendar",

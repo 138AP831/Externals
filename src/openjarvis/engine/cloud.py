@@ -420,10 +420,53 @@ def _convert_tools_to_google(
             {
                 "name": func.get("name", ""),
                 "description": func.get("description", ""),
-                "parameters": func.get("parameters", {}),
+                "parameters": _google_schema(func.get("parameters", {})),
             }
         )
     return declarations
+
+
+# JSON-Schema keywords Gemini's function-declaration schema rejects with
+# 400 INVALID_ARGUMENT (e.g. "Unknown name additional_properties").
+_GOOGLE_UNSUPPORTED_SCHEMA_KEYS = frozenset(
+    {
+        "additionalProperties",
+        "$schema",
+        "$id",
+        "$ref",
+        "$defs",
+        "definitions",
+        "examples",
+        "const",
+        "default",
+        "title",
+        "patternProperties",
+        "unevaluatedProperties",
+        "dependentRequired",
+        "dependentSchemas",
+    }
+)
+
+
+def _google_schema(schema: Any) -> Any:
+    """Strip JSON-Schema keywords Gemini does not accept, recursively.
+
+    Property names live under ``properties`` and are kept as-is, so a tool
+    parameter that happens to be called e.g. ``title`` is not dropped.
+    """
+    if isinstance(schema, list):
+        return [_google_schema(item) for item in schema]
+    if not isinstance(schema, dict):
+        return schema
+    cleaned: Dict[str, Any] = {}
+    for key, value in schema.items():
+        if key in _GOOGLE_UNSUPPORTED_SCHEMA_KEYS:
+            continue
+        if key == "properties" and isinstance(value, dict):
+            cleaned[key] = {name: _google_schema(v) for name, v in value.items()}
+        else:
+            cleaned[key] = _google_schema(value)
+    return cleaned
 
 
 @EngineRegistry.register("cloud")

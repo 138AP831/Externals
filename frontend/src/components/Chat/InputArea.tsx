@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { Send, Square, Paperclip, Search } from 'lucide-react';
+import { Send, Square, Paperclip, Search, Ear } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAppStore, generateId } from '../../lib/store';
 import { streamChat, streamResearch } from '../../lib/sse';
@@ -11,6 +11,16 @@ import {
   resolveChatEngine,
 } from '../../lib/chat-telemetry';
 import { MicButton } from './MicButton';
+import {
+  useHandsFree,
+  enableHandsFree,
+  disableHandsFree,
+  restoreHandsFree,
+  setCommandHandler,
+  speakReply,
+  stopSpeaking,
+  isHandsFreeSupported,
+} from '../../lib/handsfree';
 import { useSpeech } from '../../hooks/useSpeech';
 import type {
   ChatMessage,
@@ -171,8 +181,10 @@ export function InputArea() {
     resetStream();
   }, [resetStream]);
 
-  const sendMessage = useCallback(async () => {
-    const content = input.trim();
+  // `override` is a spoken command from hands-free mode; its reply is read aloud.
+  const sendMessage = useCallback(async (override?: string) => {
+    const fromVoice = typeof override === 'string';
+    const content = (fromVoice ? override : input).trim();
     if (!content || streamState.isStreaming) return;
     if (!selectedModel) {
       toast.error('Pick a model first (⌘K)');
@@ -523,6 +535,7 @@ export function InputArea() {
         timerRef.current = null;
       }
       resetStream();
+      if (fromVoice) speakReply(accumulatedContent);
       useAppStore.getState().addLogEntry({
         timestamp: Date.now(), level: 'info', category: 'chat',
         message: `Response: ${accumulatedContent.length} chars`,
@@ -554,10 +567,36 @@ export function InputArea() {
     maxTokens,
   ]);
 
+  // Hands-free voice: spoken commands go through the same send path.
+  const handsFree = useHandsFree();
+  const sendRef = useRef(sendMessage);
+  sendRef.current = sendMessage;
+  const busyRef = useRef(false);
+  busyRef.current = streamState.isStreaming || modelLoading || !selectedModel;
+  useEffect(() => {
+    setCommandHandler((command) => {
+      if (busyRef.current) return false;
+      void sendRef.current(command);
+      return true;
+    });
+    restoreHandsFree();
+    return () => setCommandHandler(null);
+  }, []);
+  useEffect(() => {
+    if (handsFree.error) toast.error(handsFree.error, { duration: 6000 });
+  }, [handsFree.error]);
+  const handsFreeOn = handsFree.status !== 'off' && handsFree.status !== 'unsupported';
+  const handsFreeLabel: Record<string, string> = {
+    waiting: 'Say "Hey Jarvis"…',
+    listening: 'Listening…',
+    thinking: handsFree.heard ? `“${handsFree.heard}”` : 'Thinking…',
+    speaking: 'Speaking… tap to stop',
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      sendMessage();
+      void sendMessage();
     }
   };
 
@@ -581,6 +620,38 @@ export function InputArea() {
             <Search size={12} />
             Deep Research
           </button>
+          {isHandsFreeSupported() && (
+            <button
+              type="button"
+              onClick={() => (handsFreeOn ? disableHandsFree() : enableHandsFree())}
+              aria-pressed={handsFreeOn}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs transition-colors cursor-pointer"
+              style={{
+                background: handsFreeOn ? 'var(--color-accent-subtle)' : 'transparent',
+                border: `1px solid ${handsFreeOn ? 'var(--color-accent)' : 'var(--color-border)'}`,
+                color: handsFreeOn ? 'var(--color-accent)' : 'var(--color-text-tertiary)',
+              }}
+              title={handsFreeOn ? 'Hands-free voice: on' : 'Hands-free voice: say "Hey Jarvis"'}
+            >
+              <Ear size={12} />
+              Hands-free
+            </button>
+          )}
+          {handsFreeOn && (
+            <button
+              type="button"
+              onClick={() => handsFree.status === 'speaking' && stopSpeaking()}
+              className="text-xs truncate min-w-0 flex items-center gap-1.5"
+              style={{ color: 'var(--color-accent)' }}
+              aria-live="polite"
+            >
+              <span
+                className={`w-1.5 h-1.5 rounded-full shrink-0 ${handsFree.status === 'listening' ? 'animate-pulse' : ''}`}
+                style={{ background: 'var(--color-accent)' }}
+              />
+              <span className="truncate">{handsFreeLabel[handsFree.status] ?? ''}</span>
+            </button>
+          )}
         </div>
         {deepResearch && corpusSync.syncing && corpusSync.itemsSynced > 0 && (
           <div
@@ -632,7 +703,7 @@ export function InputArea() {
               reason={micReason}
             />
             <button
-              onClick={sendMessage}
+              onClick={() => void sendMessage()}
               disabled={streamState.isStreaming || !input.trim() || modelLoading || !selectedModel}
               title={selectedModel ? 'Send message' : 'Pick a model first (⌘K)'}
               className="p-2 rounded-xl transition-colors shrink-0 cursor-pointer disabled:opacity-30 disabled:cursor-default"

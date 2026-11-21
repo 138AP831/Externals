@@ -49,6 +49,8 @@ COPY rust/ rust/
 COPY scripts/install scripts/install
 COPY deploy/windows deploy/windows
 COPY configs/openjarvis/examples configs/openjarvis/examples
+# Server config used by the Render deployment (OPENJARVIS_CONFIG).
+COPY deploy/render deploy/render
 
 # Copy built frontend into the server static directory
 COPY --from=frontend /src/openjarvis/server/static src/openjarvis/server/static/
