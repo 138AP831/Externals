@@ -40,3 +40,26 @@ To use OpenAI/Anthropic instead, set that key in `.env` and change
     saving crashed on them (tool-using agents failed). Now base64-encoded.
   - `engine/cloud.py`: images (`-i` / `--screen`) were dropped for cloud engines;
     they are now sent to Gemini as inline image parts.
+
+## Android phone (Samsung Galaxy A56, any Android 7+)
+Jarvis runs on the phone itself in Termux; you use it through Chrome as an app.
+
+1. Install **Termux** from F-Droid (https://f-droid.org/packages/com.termux/) or
+   its GitHub releases. Not the Play Store version — it is outdated.
+   Optional: **Termux:API** and **Termux:Widget** from the same place.
+2. In Termux:
+   ```bash
+   pkg install -y curl
+   curl -fsSLO https://raw.githubusercontent.com/138AP831/Externals/ccr-0c7f40b2-ujfngp/scripts/android/install-termux.sh
+   bash install-termux.sh
+   ```
+   First install compiles some packages: allow 10–30 min, keep the screen on.
+3. Add your key: `nano ~/jarvis/.env` → `GEMINI_API_KEY=...` (Ctrl+O, Enter, Ctrl+X).
+4. `jarvis-start` — opens Jarvis in Chrome. In Chrome: ⋮ → **Add to Home screen** →
+   **Install** for an app icon.
+5. Afterwards: open Termux and run `jarvis-start` (or tap the **Jarvis** widget
+   with Termux:Widget), then tap the app icon. `jarvis-stop` stops it.
+
+Samsung battery saver may kill Termux in the background: Settings → Apps → Termux →
+Battery → **Unrestricted**. Terminal chat also works: `jarvis chat`.
+To update later, re-run `bash install-termux.sh`.
