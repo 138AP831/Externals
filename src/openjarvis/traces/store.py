@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import base64
 import json
 import re
 import sqlite3
@@ -12,6 +13,18 @@ from typing import Any, List, Optional
 
 from openjarvis.core.events import Event, EventBus, EventType
 from openjarvis.core.types import StepType, Trace, TraceStep
+
+
+def _json_default(obj: Any) -> Any:
+    # Gemini tool calls carry raw-bytes ``thought_signature`` values.
+    if isinstance(obj, (bytes, bytearray)):
+        return base64.b64encode(bytes(obj)).decode("ascii")
+    raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
+
+
+def _dumps(obj: Any) -> str:
+    return json.dumps(obj, default=_json_default)
+
 
 _CREATE_TRACES = """\
 CREATE TABLE IF NOT EXISTS traces (
@@ -193,8 +206,8 @@ class TraceStore:
                 trace.ended_at,
                 trace.total_tokens,
                 trace.total_latency_seconds,
-                json.dumps(trace.metadata),
-                json.dumps(trace.messages),
+                _dumps(trace.metadata),
+                _dumps(trace.messages),
             ),
         )
         for idx, step in enumerate(trace.steps):
@@ -208,9 +221,9 @@ class TraceStore:
                     else step.step_type,
                     step.timestamp,
                     step.duration_seconds,
-                    json.dumps(step.input),
-                    json.dumps(step.output),
-                    json.dumps(step.metadata),
+                    _dumps(step.input),
+                    _dumps(step.output),
+                    _dumps(step.metadata),
                 ),
             )
         self._conn.commit()
