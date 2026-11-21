@@ -103,3 +103,17 @@ To open Jarvis by voice from anywhere on a Samsung:
 - **Bixby**: Bixby app → ⋮ → Quick commands → **+** → command "Jarvis" →
   action "Open Jarvis" (the installed app). Then: "Hi Bixby, Jarvis".
 - **Google Assistant**: "Hey Google, open Jarvis".
+
+## Spotify
+1. https://developer.spotify.com/dashboard → log in → **Create app**:
+   name "Jarvis", redirect URI `https://jarvis-b6ha.onrender.com/spotify/callback`,
+   tick **Web API** → Save. Open **Settings** and copy the Client ID and Client Secret.
+2. Render → jarvis → **Environment**: add `SPOTIFY_CLIENT_ID` and
+   `SPOTIFY_CLIENT_SECRET` → Save, rebuild and deploy.
+3. Open `https://jarvis-b6ha.onrender.com/spotify/login?key=YOUR_JARVIS_PASSWORD`,
+   approve in Spotify.
+4. The page shows a token: add it in Render as `SPOTIFY_REFRESH_TOKEN` (keeps you
+   signed in after restarts).
+Ask: "what am I listening to?", "my top artists this month", "play Blinding Lights",
+"pause", "next song", "volume 30". Playback control needs Spotify Premium and the
+Spotify app open on a device.

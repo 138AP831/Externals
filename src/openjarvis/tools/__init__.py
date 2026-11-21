@@ -44,6 +44,7 @@ _BUILTIN_TOOL_MODULES = (
     "text_to_speech",
     "digest_collect",
     "gmail_tools",
+    "spotify_tools",
     "scan_chunks",
     "knowledge_sql",
     "apple_calendar",

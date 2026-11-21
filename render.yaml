@@ -36,5 +36,13 @@ services:
         sync: false
       - key: GMAIL_APP_PASSWORD
         sync: false
+      # Optional: Spotify (see SETUP.md). The refresh token comes from
+      # /spotify/login after the first sign-in.
+      - key: SPOTIFY_CLIENT_ID
+        sync: false
+      - key: SPOTIFY_CLIENT_SECRET
+        sync: false
+      - key: SPOTIFY_REFRESH_TOKEN
+        sync: false
       - key: OPENJARVIS_HOME
         value: /home/openjarvis/.openjarvis

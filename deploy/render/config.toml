@@ -11,8 +11,8 @@ default_model = "gemini-3.5-flash-lite"
 default_agent = "orchestrator"
 
 [tools]
-# Server-safe tools that work without extra accounts, plus live Gmail.
-enabled = "think,calculator,web_search,http_request,code_interpreter,pdf_extract,fx_macro_data,memory_store,memory_search,memory_retrieve,gmail_search_emails,gmail_list_unread,gmail_read_email"
+# Server-safe tools that work without extra accounts, plus Gmail and Spotify.
+enabled = "think,calculator,web_search,http_request,code_interpreter,pdf_extract,fx_macro_data,memory_store,memory_search,memory_retrieve,gmail_search_emails,gmail_list_unread,gmail_read_email,spotify_now_playing,spotify_recently_played,spotify_top_items,spotify_search,spotify_playlists,spotify_play,spotify_control"
 
 [analytics]
 enabled = false
