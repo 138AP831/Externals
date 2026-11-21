@@ -2,14 +2,14 @@
 # OpenJarvis installer for Android (Termux). Tested target: Samsung Galaxy A56.
 #
 # In Termux, run:
-#   curl -fsSLO https://raw.githubusercontent.com/138AP831/Externals/ccr-0c7f40b2-ujfngp/scripts/android/install-termux.sh
+#   curl -fsSLO https://raw.githubusercontent.com/138AP831/Externals/master/scripts/android/install-termux.sh
 #   bash install-termux.sh
 #
 # Re-running is safe: it updates the checkout and reinstalls.
 set -euo pipefail
 
 REPO_URL="${JARVIS_REPO_URL:-https://github.com/138AP831/Externals.git}"
-BRANCH="${JARVIS_BRANCH:-ccr-0c7f40b2-ujfngp}"
+BRANCH="${JARVIS_BRANCH:-master}"
 DIR="${JARVIS_DIR:-$HOME/jarvis}"
 
 say()  { printf '\n\033[1;36m==> %s\033[0m\n' "$*"; }

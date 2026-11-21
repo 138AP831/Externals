@@ -50,7 +50,7 @@ Jarvis runs on the phone itself in Termux; you use it through Chrome as an app.
 2. In Termux:
    ```bash
    pkg install -y curl
-   curl -fsSLO https://raw.githubusercontent.com/138AP831/Externals/ccr-0c7f40b2-ujfngp/scripts/android/install-termux.sh
+   curl -fsSLO https://raw.githubusercontent.com/138AP831/Externals/master/scripts/android/install-termux.sh
    bash install-termux.sh
    ```
    First install compiles some packages: allow 10–30 min, keep the screen on.
@@ -70,7 +70,7 @@ No Termux, nothing to start.
 
 1. Sign up at https://render.com (use "Sign in with GitHub").
 2. **New → Blueprint** → connect `138AP831/Externals` → branch
-   `ccr-0c7f40b2-ujfngp` → it reads `render.yaml`.
+   `master` → it reads `render.yaml`.
 3. When asked for the two secrets:
    - `OPENJARVIS_API_KEY`: make up a long password (this protects your Jarvis).
    - `GEMINI_API_KEY`: your Google AI Studio key.

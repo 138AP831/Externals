@@ -7,7 +7,7 @@ services:
     runtime: docker
     plan: free
     region: oregon
-    branch: ccr-0c7f40b2-ujfngp
+    branch: master
     dockerfilePath: ./deploy/docker/Dockerfile
     dockerContext: .
     # Render's default web port is 10000; Docker commands do not expand $PORT,
