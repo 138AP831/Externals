@@ -1,5 +1,8 @@
 # OpenJarvis — local setup (Gemini)
 
+The assistant is branded **Nova** in the app (name, wake word "Hey Nova", identity);
+the underlying project is OpenJarvis.
+
 ## First run
 ```bash
 uv sync --extra inference-cloud --extra inference-google --extra server --extra dev
@@ -94,9 +97,9 @@ Then ask e.g. "Do I have unread emails?", "Find emails from Amazon this week",
 "Read the latest email from my bank". Tools: `gmail_search_emails`,
 `gmail_list_unread`, `gmail_read_email` (Gmail search syntax works).
 
-## Voice ("Hey Jarvis")
+## Voice ("Hey Nova")
 Hands-free is on by default: open the app (allow the microphone the first time).
-Say "Hey Jarvis" or "Hi Jarvis" + your question; Jarvis answers out loud.
+Say "Hey Nova" or "Hi Nova" + your question; Jarvis answers out loud.
 Tap **Hands-free** to switch it off (remembered). Works while the app is open on screen.
 
 To open Jarvis by voice from anywhere on a Samsung:
@@ -119,8 +122,8 @@ Ask: "what am I listening to?", "my top artists this month", "play Blinding Ligh
 Spotify app open on a device.
 
 ## Camera ("what am I looking at?")
-Tap the **camera** icon next to the message box, or say "Hey Jarvis, open the camera".
+Tap the **camera** icon next to the message box, or say "Hey Nova, open the camera".
 Point the phone and ask — typed, the 👁 button ("what is this?"), or
-"Hey Jarvis, is this enough water for the plant?". Jarvis captures ~1.5 s of
+"Hey Nova, is this enough water for the plant?". Jarvis captures ~1.5 s of
 frames (so it sees motion like pouring), answers aloud, and keeps the Q&A in
-the chat. Say "Hey Jarvis, close camera" to exit. Server: `POST /v1/vision`.
+the chat. Say "Hey Nova, close camera" to exit. Server: `POST /v1/vision`.

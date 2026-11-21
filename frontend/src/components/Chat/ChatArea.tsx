@@ -192,7 +192,7 @@ export function ChatArea() {
               {getGreeting()}
             </h2>
             <p className="text-sm text-center max-w-sm mb-6" style={{ color: 'var(--color-text-secondary)' }}>
-              Ask anything. Your AI runs locally — private, fast, and always available.
+              I’m Nova. Ask me anything, or just say “Hey Nova”.
             </p>
 
             {/* Quick action hints */}

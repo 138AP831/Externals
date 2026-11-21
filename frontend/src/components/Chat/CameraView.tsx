@@ -12,7 +12,7 @@ import {
 
 /**
  * Live camera: point the phone at something and ask about it (typed, or
- * "Hey Jarvis, ..." in hands-free mode). Each question captures a few frames
+ * "Hey Nova, ..." in hands-free mode). Each question captures a few frames
  * over ~1.4 s so the model can see motion, sends them to /v1/vision, shows
  * and speaks the answer, and logs the Q&A in the current chat.
  */
@@ -131,8 +131,8 @@ export function CameraView({ onClose }: { onClose: () => void }) {
           const detail = await res.json().then((d) => d?.detail).catch(() => '');
           throw new Error(
             res.status === 401
-              ? 'Not signed in to Jarvis. Open the app link with your password again.'
-              : `Jarvis couldn't look right now${detail ? `: ${detail}` : ''}.`,
+              ? 'Not signed in to Nova. Open the app link with your password again.'
+              : `Nova couldn't look right now${detail ? `: ${detail}` : ''}.`,
           );
         }
         const data = (await res.json()) as { answer: string };
@@ -154,7 +154,7 @@ export function CameraView({ onClose }: { onClose: () => void }) {
     [grabFrame, logToChat],
   );
 
-  // While open, "Hey Jarvis, ..." questions are about what the camera sees.
+  // While open, "Hey Nova, ..." questions are about what the camera sees.
   useEffect(() => {
     const previous = setCommandHandler((command) => {
       if (/^(close|stop|exit|turn off)( the)? camera\b/i.test(command)) {
@@ -179,7 +179,7 @@ export function CameraView({ onClose }: { onClose: () => void }) {
 
   const hint =
     handsFree.status === 'waiting'
-      ? 'Say “Hey Jarvis, …” or type a question'
+      ? 'Say “Hey Nova, …” or type a question'
       : handsFree.status === 'listening'
         ? 'Listening…'
         : handsFree.status === 'speaking'
@@ -189,7 +189,7 @@ export function CameraView({ onClose }: { onClose: () => void }) {
   // Portal to <body>: the chat column creates its own stacking context, which
   // would let the sidebar toggle draw on top of the camera.
   return createPortal(
-    <div className="fixed inset-0 z-[100] flex flex-col bg-black" role="dialog" aria-label="Jarvis camera">
+    <div className="fixed inset-0 z-[100] flex flex-col bg-black" role="dialog" aria-label="Nova camera">
       <video
         ref={videoRef}
         playsInline

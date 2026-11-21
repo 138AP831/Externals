@@ -76,12 +76,16 @@ afterEach(() => {
 
 describe('parseWake', () => {
   it.each([
+    ['Hey Nova what is the weather', true, 'what is the weather'],
+    ['hi nova, open the camera', true, 'open the camera'],
+    ['OK Nova', true, ''],
     ['Hey Jarvis what is the weather', true, 'what is the weather'],
     ['hi jarvis, check my email', true, 'check my email'],
     ['OK Jarvis', true, ''],
     ['hey jervis read my unread mail', true, 'read my unread mail'],
     ['jarvis do this', false, ''],
     ['they said hi to Travis', false, ''],
+    ['the supernova was bright', false, ''],
   ])('%s', (text, woke, command) => {
     expect(parseWake(text)).toEqual({ woke, command });
   });

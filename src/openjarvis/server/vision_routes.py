@@ -25,7 +25,7 @@ MAX_FRAME_BYTES = 1_500_000  # decoded JPEG size per frame
 MAX_HISTORY = 6
 
 SYSTEM_PROMPT = (
-    "You are Jarvis, a helpful assistant looking through the user's phone "
+    "You are Nova, a helpful assistant looking through the user's phone "
     "camera in real time. The images are consecutive frames from the live "
     "camera, oldest first, about {gap} seconds apart, so you can judge motion "
     "and change (for example how fast water is being poured). Answer the "

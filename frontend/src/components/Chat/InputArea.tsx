@@ -597,7 +597,7 @@ export function InputArea() {
   }, [handsFree.error]);
   const handsFreeOn = handsFree.status !== 'off' && handsFree.status !== 'unsupported';
   const handsFreeLabel: Record<string, string> = {
-    waiting: 'Say "Hey Jarvis"…',
+    waiting: 'Say "Hey Nova"…',
     listening: 'Listening…',
     thinking: handsFree.heard ? `“${handsFree.heard}”` : 'Thinking…',
     speaking: 'Speaking… tap to stop',
@@ -641,7 +641,7 @@ export function InputArea() {
                 border: `1px solid ${handsFreeOn ? 'var(--color-accent)' : 'var(--color-border)'}`,
                 color: handsFreeOn ? 'var(--color-accent)' : 'var(--color-text-tertiary)',
               }}
-              title={handsFreeOn ? 'Hands-free voice: on' : 'Hands-free voice: say "Hey Jarvis"'}
+              title={handsFreeOn ? 'Hands-free voice: on' : 'Hands-free voice: say "Hey Nova"'}
             >
               <Ear size={12} />
               Hands-free
@@ -689,7 +689,7 @@ export function InputArea() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={selectedModel ? 'Message OpenJarvis...' : 'Pick a model first (⌘K)...'}
+          placeholder={selectedModel ? 'Message Nova...' : 'Pick a model first (⌘K)...'}
           rows={1}
           className="flex-1 bg-transparent outline-none resize-none text-sm leading-relaxed"
           style={{ color: 'var(--color-text)', maxHeight: '200px' }}

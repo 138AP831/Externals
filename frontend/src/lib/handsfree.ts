@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { toSpeakableText } from './message-text';
 
 /**
- * Hands-free voice mode: listens for "Hey Jarvis" / "Hi Jarvis" using the
+ * Hands-free voice mode: listens for "Hey Nova" / "Hi Nova" using the
  * browser's own speech recognition (Chrome on Android uses Google's), sends
  * the spoken command as a chat message, and reads the reply aloud with the
  * browser's speech synthesis. Needs no speech backend on the server.
@@ -19,9 +19,10 @@ export type HandsFreeStatus =
   | 'thinking' // command sent, waiting for the reply
   | 'speaking';
 
-// Speech recognisers often mishear "Jarvis"; accept the common variants.
+// Wake word is "Nova". Speech recognisers often mishear it, so accept common
+// variants; the old name "Jarvis" still works too.
 const WAKE_RE =
-  /\b(?:hey|hi|hai|hay|hello|ok|okay)[\s,]+(?:jarvis|jarvas|jervis|javis|jarvi|jaavis)\b[\s,.!?]*(.*)$/i;
+  /\b(?:hey|hi|hai|hay|hello|ok|okay)[\s,]+(?:nova|novah|noba|nava|knova|jarvis|jarvas|jervis|javis)\b[\s,.!?]*(.*)$/i;
 
 /** Split a transcript into wake phrase + command. */
 export function parseWake(transcript: string): { woke: boolean; command: string } {
@@ -99,7 +100,7 @@ function submit(command: string) {
   const sent = commandHandler ? commandHandler(command) : false;
   if (sent) {
     store().set({ status: 'thinking', heard: command });
-    stopRecognition(); // don't listen while Jarvis thinks and talks
+    stopRecognition(); // don't listen while Nova thinks and talks
   } else {
     say("Sorry, I'm still busy with the last request.");
   }
@@ -222,7 +223,7 @@ function say(text: string, opts: { resumeAfter?: boolean } = {}) {
     utter.onend = () => backToWaiting();
     utter.onerror = (e: SpeechSynthesisErrorEvent) => {
       if (e.error === 'not-allowed') {
-        store().set({ error: 'Tap the screen once to allow Jarvis to speak.' });
+        store().set({ error: 'Tap the screen once to allow Nova to speak.' });
       }
       backToWaiting();
     };
@@ -230,7 +231,7 @@ function say(text: string, opts: { resumeAfter?: boolean } = {}) {
   synth.speak(utter);
 }
 
-/** Read a finished reply aloud, then go back to waiting for "Hey Jarvis". */
+/** Read a finished reply aloud, then go back to waiting for "Hey Nova". */
 export function speakReply(text: string): void {
   if (!enabled) return;
   const speakable = toSpeakableText(text).trim();
@@ -311,7 +312,7 @@ export function disableHandsFree(opts: { remember?: boolean } = {}): void {
 function armStartOnFirstTap() {
   if (tapListenerArmed || typeof document === 'undefined') return;
   tapListenerArmed = true;
-  store().set({ error: 'Tap anywhere once so Jarvis can start listening.' });
+  store().set({ error: 'Tap anywhere once so Nova can start listening.' });
   document.addEventListener(
     'pointerdown',
     () => {
@@ -327,7 +328,7 @@ export function isHandsFreeEnabled(): boolean {
 }
 
 /**
- * Start listening on app open — on by default, so "Hey Jarvis" works without
+ * Start listening on app open — on by default, so "Hey Nova" works without
  * tapping anything. Stays off only if the user switched it off.
  */
 export function restoreHandsFree(): void {
